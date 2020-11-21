@@ -1,0 +1,412 @@
+#!/bin/bash
+set -e
+echo "SPQR_MINI: quick energy minimization of PDB files with SPQR."
+
+#PARAMETERS#
+SPQR_PATH=
+ENERGY_PATH=$SPQR_PATH/interactions
+BIN_PATH=$SPQR_PATH/bin
+TOOLS_PATH=$SPQR_PATH/tools
+INTRAC=intrac.btb
+NPROC=1
+MPROC=$((NPROC - 1))
+INDMINI=0
+IND=`printf %02d $INDMINI`
+CLASH_STEPS=30
+CLASH_NMC=10000
+CLASH_NSA=20
+CLASH_TSA=2
+ERMSD_NMC=10000
+ERMSD_NSA=1
+ERMSD_TSA=9
+ERMSD_NTO=$((ERMSD_NMC*ERMSD_NSA))
+ENERG_NMC=10000
+ENERG_NSA=10
+ENERG_TSA=2
+LNKRM_NMC=1000
+LNKRM_TMC=9
+LNKRM_STEPS=20
+BINCLASH=SPQR_wSA
+BINANNOT=SPQR_ENERG
+BINERMSD=SPQR_eSA
+BINENERG=SPQR_SA
+BINLNKRMV=SPQR_cMC
+ERMSD_PREF=5000
+ERMSD_CUTOFF=100
+############
+
+#PARSE ARGUMENTS#
+PDBSTRUCT=""
+NAME=""
+PARAMS=""
+CONVERT=""
+LINKDCHECK=""
+SSTRUCT=""
+LNKRMV=""
+RSEED=1
+
+show_usage ()
+{
+    echo "Usage: SPQR_MINI -i <input_file> [ -o <output_suffix> ] [ -c ]  [ -t <secondary structure file> -r <random_seed> ]"
+    echo "input_file must be in SPQR-pdb format. If not, the flag -c will take care of that."
+    echo "Secondary structure is optional. It must contain the sequence in the first line and the secondary structure in Vienna format in the second line."
+}
+
+write_params ( )
+{
+    #c_params, sa_params, file, typ )
+    file=$1
+    echo "TEMPERATURE     "$2 > $file
+    echo "PDB_OUTPUT	  "$3 >> $file
+    echo "RG_COUPL	  "$4 " " $5 >> $file
+    echo "MC_PH_XYZ 	  "$6 >> $file
+    echo "MC_NT_XYZ	  "$7 >> $file
+    echo "MC_STEPS        "$8 >> $file
+    echo "MC_TRAJ_STEPS   "$9 >> $file
+    echo "MC_CHKP_STEPS   "${10} >> $file
+    echo "RANDOM_SEED     "${11} >> $file
+    echo "MC_NT_ANGLE     "${12}  " " ${13} >> $file
+    echo "ENERGS_PATH     "${14}  >> $file
+    if [ "${15}" -eq 1 ] ; then 
+	echo "SA_TINI		"${16}  >> $file
+	echo "SA_TMIN		"${17}  >> $file
+	echo "SA_TFAC		"${18}  >> $file
+	echo "SA_STEP		"${19}  >> $file
+	echo "SA_NT		"${20}  >> $file
+	echo "SA_PREENERG	"${21}  >> $file
+	echo "SA_SFAC		"${22}  >> $file
+	echo "SA_RTIMES	        "${23}  >> $file
+    fi
+}
+
+#DEFAULTS#
+MC_PARAMS=(3 0 0 0 0.2 0.1 1 1000000 10000000 10 0.03 0.1 intrac)
+SA_PARAMS=(sa_ti 0.4 0.75 0 sa_nt  0 0.75 0)
+##########
+
+while (( "$#" )); do
+    case "$1" in
+	-i|--pdb-file)
+	    PDBSTRUCT=$2
+	    shift 2
+	    ;;
+	-o|--output)
+	    NAME=$2
+	    shift 2
+	    ;;
+	-c|--convert)
+	    CONVERT=1
+	    shift
+	    ;;
+	-d|--doublecheck)
+	    LINKDCHECK=1
+	    shift
+	    ;;
+	-r|--randomseed)
+	    RSEED=$2
+	    shift
+	    ;;
+	-t|--sstruct)
+	    LNKRMV=1
+	    SSTRUCT=$2
+	    shift 2
+	    ;;	
+	-h|--help)
+	    show_usage
+	    exit 1
+	    ;;
+	--) # end argument parsing
+	    shift
+	    break
+	    ;;
+	-*|--*=) # unsupported flags
+	echo "Error: Unsupported flag $1" >&2
+	exit 1
+	;;
+	*) # preserve positional arguments
+	    PARAMS="$PARAMS $1"
+	    shift
+	    ;;
+    esac
+done
+
+if [ ! $SPQR_PATH  ] ; then
+    echo "ERROR: No SPQR path specified. Change the SPQR_PATH variable in the script."
+    exit 1
+fi
+
+if [ ! $PDBSTRUCT ] ; then
+    echo "No pdb file introduced!"
+    show_usage
+    exit 1
+fi
+
+if [ ! $NAME ] ; then
+    NAME=$PDBSTRUCT
+fi
+
+DIRNAME=miniSPQR_$NAME
+if [ -d "$DIRNAME" ] ; then
+    echo "Directory $DIRNAME already exists. Please rename the output."
+    exit 1
+fi
+
+echo "Saving output to directory "$DIRNAME
+# set positional arguments in their proper place
+eval set -- "$PARAMS"
+#################
+
+#STEP 1#
+THISSIM=01
+mkdir $DIRNAME
+if [ $CONVERT ] ; then 
+    echo "Creating SPQR pdb format structure..."
+    cp $TOOLS_PATH/pdb2spqr.py $DIRNAME
+    cd $DIRNAME
+    python pdb2spqr.py ../$PDBSTRUCT > init.pdb
+    rm pdb2spqr.py
+    cd ..
+else cp $PDBSTRUCT $DIRNAME/init.pdb
+fi
+echo "Creating files for clash removal..."
+mkdir $DIRNAME/$THISSIM
+MCPARAMS1=(${MC_PARAMS[@]})
+SAPARAMS1=(${SA_PARAMS[@]})
+MCPARAMS1[6]=$CLASH_NMC
+#MCPARAMS1[7]=$((CLASH_NMC*CLASH_NSA+1))
+#MCPARAMS1[8]=$((CLASH_NMC*CLASH_NSA+1))
+MCPARAMS1[9]=$RSEED
+MCPARAMS1[12]="$ENERGY_PATH/$INTRAC"
+SAPARAMS1[0]=$CLASH_TSA
+SAPARAMS1[4]=$CLASH_NSA
+write_params $DIRNAME/$THISSIM/params.spqr ${MCPARAMS1[@]} 1 ${SAPARAMS1[@]}
+
+mkdir $DIRNAME/$THISSIM/pdb_inits
+cp $DIRNAME/init.pdb $DIRNAME/$THISSIM/pdb_inits/init.pdb
+cp $BIN_PATH/$BINCLASH $DIRNAME/$THISSIM
+cp $BIN_PATH/$BINANNOT $DIRNAME/$THISSIM
+
+
+if [ "$LNKRMV" ]; then
+    cp $TOOLS_PATH/SPQR_DLINK.py $DIRNAME/$THISSIM
+    cp $SSTRUCT $DIRNAME/$THISSIM
+    NPSSTRUCT=`basename $SSTRUCT`
+fi
+echo "Setting up the parameters for clashing removal..."
+echo "Running clash removal annealing..."
+cd $DIRNAME/$THISSIM
+./$BINCLASH -i $INDMINI > clash_$INDMINI.out
+mcconf=configs/chk.last.p$IND.mc
+PDBSELECTED=""
+SELECTED=""
+for cstep in `seq 1 $CLASH_STEPS`; do
+    echo "Step $cstep"
+    ./$BINANNOT $mcconf -t > clashtemp
+    fc=`grep "No clashes found" clashtemp | wc | awk '{print $1}'`
+    if [ "$fc" -eq "1" ] ; then
+	cp configs/chk.last.p$IND.mc ../01.mc
+	PDBSELECTED=final.p$IND.pdb
+	SELECTED=configs/chk.last.p00.mc
+	break
+    else
+	echo "Trying again..."
+	cp configs/chk.last.p$IND.mc pdb_inits/init.p$IND.mc
+    fi
+done
+if [  "$PDBSELECTED" ] ; then
+    echo "Minimization successful!"
+else
+    echo "There are still clashes in the initial condition of $INDMINI. Try increasing the CLASH_NMC variable in the script." ; exit ;
+fi
+######################
+LNKFLAG=""
+if [ "$LNKRMV" ]; then
+    echo "Detecting links between loops..."
+    python SPQR_DLINK.py -i $PDBSELECTED -t $NPSSTRUCT -o CLASH -p > dlink.out
+    if [ -s linked_loops_CLASH.lst ] ; then
+	mv linked_loops_CLASH.lst linked_loops.lst
+	LNKFLAG=1
+	echo "Links detected. Removal will be needed."
+    fi
+fi
+cd ../..
+echo "Clashes removed successfully."
+
+#######
+#HERE DETECT AND REMOVE LINKS IF THEY EXIST!#
+if [ "$LNKRMV" ] && [ "$LNKFLAG"  ]; then
+    echo "Attempting to remove links..."
+    THISSIM=LR1
+    PREVSIM=01
+    mkdir $DIRNAME/$THISSIM
+    MCPARAMSL1=(${MC_PARAMS[@]})
+    SAPARAMSL1=(${SA_PARAMS[@]})
+    MCPARAMSL1[0]=$LNKRM_TMC
+    MCPARAMSL1[6]=$LNKRM_NMC
+    #MCPARAMSL1[7]=$LNKRM_NMC
+    #MCPARAMSL1[8]=$LNKRM_NMC
+    MCPARAMSL1[12]="$ENERGY_PATH/$INTRAC"
+    SAPARAMSL1[0]=$CLASH_TSA
+    SAPARAMSL1[4]=$CLASH_NSA
+    write_params $DIRNAME/$THISSIM/params.spqr ${MCPARAMSL1[@]} 0 ${SAPARAMSL1[@]}
+    mkdir $DIRNAME/$THISSIM/pdb_inits
+    cp $DIRNAME/$PREVSIM/$SELECTED $DIRNAME/$THISSIM/pdb_inits/init.mc
+    cp $DIRNAME/$PREVSIM/$PDBSELECTED $DIRNAME/$THISSIM/pdb_inits/init.pdb
+    cp $DIRNAME/$PREVSIM/linked_loops.lst $DIRNAME/$THISSIM
+    cp $BIN_PATH/$BINLNKRMV $DIRNAME/$THISSIM
+    cp $TOOLS_PATH/SPQR_DLINK.py $DIRNAME/$THISSIM
+    cp $TOOLS_PATH/SPQR_ASSEMBLE.py $DIRNAME/$THISSIM
+    cp $SSTRUCT $DIRNAME/$THISSIM
+    NPSSTRUCT=`basename $SSTRUCT`
+    cd $DIRNAME/$THISSIM
+    
+    #python spqr2ermsd.py -i ../init.pdb -t $NPSSTRUCT -o ermsd_frags.lst -e -k1 0.1 -k2 100
+    python SPQR_ASSEMBLE.py -f $NPSSTRUCT -o lnkrm
+    rm lnkrm.pdb ; mv ermsd_frags_lnkrm.lst ermsd_frags.lst
+    for lstep in `seq 1 $LNKRM_STEPS`; do
+	echo "Step $lstep"
+	./$BINLNKRMV $iconf > lnkrmv_$NAME.$iconf.out
+	check=`python SPQR_DLINK.py -i final.p00.pdb -t $NPSSTRUCT -o CHECK -p`
+	if [ "$check" ] ; then
+	    echo "Trying again"
+	    cp configs/chk.last.p00.mc pdb_inits/init.mc
+	    #mv linked_loops_CHECK.lst linked_loops.lst
+	else
+	    break
+	fi
+    done
+    if [ "$check" ] ; then
+	echo "Links not removed after $LNKRM_STEPS refinement steps. Try increasing the LNKRM_NMC or LNKRM_STEPS parameters."
+	exit 1
+    fi
+    cd ../..
+    echo "Links removed. Proceeding to remove clashes."
+    
+    ########
+    #NOW, REMOVE CLASHES ONCE MORE#
+    THISSIM=LR2
+    PREVSIM=LR1
+    mkdir $DIRNAME/$THISSIM
+    MCPARAMSL2=(${MC_PARAMS[@]})
+    SAPARAMSL2=(${SA_PARAMS[@]})
+    MCPARAMSL2[6]=$CLASH_NMC
+    #MCPARAMSL2[7]=$((CLASH_NMC*CLASH_NSA+1))
+    #MCPARAMSL2[8]=$((CLASH_NMC*CLASH_NSA+1))
+    MCPARAMSL2[12]="$ENERGY_PATH/$INTRAC"
+    SAPARAMSL2[0]=$CLASH_TSA
+    SAPARAMSL2[4]=$CLASH_NSA
+    write_params $DIRNAME/$THISSIM/params.spqr ${MCPARAMSL2[@]} 1 ${SAPARAMSL2[@]}
+    mkdir $DIRNAME/$THISSIM/pdb_inits
+    #cp $DIRNAME/$PREVSIM/configs/chk.last.p00.mc $DIRNAME/$THISSIM/pdb_inits/init.mc
+    cp $DIRNAME/$PREVSIM/final.p00.pdb $DIRNAME/$THISSIM/pdb_inits/init.pdb
+    #cp $DIRNAME/$PREVSIM/linked_loops.lst $DIRNAME/$THISSIM/
+    sed -i 's/NN/NA/g' $DIRNAME/$THISSIM/pdb_inits/init.pdb
+    cp $BIN_PATH/$BINCLASH $DIRNAME/$THISSIM
+    cp $BIN_PATH/$BINANNOT $DIRNAME/$THISSIM
+    cd $DIRNAME/$THISSIM
+
+    ./$BINCLASH -i $INDMINI > clash_$INDMINI.out
+    PDBSELECTED=""
+    mcconf=configs/chk.last.p$IND.mc
+    for cstep in `seq 1 $CLASH_STEPS`; do
+	echo "Step $cstep"
+	./$BINANNOT $mcconf -t > clashtemp
+    fc=`grep "No clashes found" clashtemp | wc | awk '{print $1}'`
+    if [ "$fc" -eq "1" ] ; then
+	cp configs/chk.last.p$IND.mc ../01.mc
+	PDBSELECTED=final.p$IND.pdb
+	break
+    else
+	echo "Trying again..."
+	cp configs/chk.last.p$IND.mc pdb_inits/init.p$IND.mc
+    fi
+done
+    if [  "$PDBSELECTED" ] ; then
+	echo "Minimization successful!"
+    else
+	echo "There are still clashes in the initial condition of $INDMINI. Try increasing the CLASH_NMC variable in the script." ; exit ;
+    fi
+    cd ../..
+    echo "Links removed successfuly."
+else
+    echo "Skipped detection of links."
+fi
+
+########
+
+#STEP 2#
+echo "Structure refinement: minimization of ERMSD with respect to original structure."
+THISSIM=02
+PREVSIM=01
+mkdir $DIRNAME/$THISSIM
+mkdir $DIRNAME/$THISSIM/pdb_inits
+MCPARAMS2=(${MC_PARAMS[@]})
+SAPARAMS2=(${SA_PARAMS[@]})
+MCPARAMS2[6]=$ERMSD_NMC
+#MCPARAMS2[7]=$ERMSD_NMC
+#MCPARAMS2[8]=$ERMSD_NMC
+MCPARAMS2[12]=$ENERGY_PATH/$INTRAC
+SAPARAMS2[0]=$ERMSD_TSA
+SAPARAMS2[4]=$ERMSD_NSA
+write_params $DIRNAME/$THISSIM/params.spqr ${MCPARAMS2[@]} 1 ${SAPARAMS2[@]}
+cp $DIRNAME/$PREVSIM.mc $DIRNAME/$THISSIM/pdb_inits/init.mc
+
+cp $SSTRUCT $DIRNAME/$THISSIM
+cp $BIN_PATH/$BINERMSD $DIRNAME/$THISSIM
+cp $TOOLS_PATH/spqr2ermsd.py $DIRNAME/$THISSIM
+cd $DIRNAME/$THISSIM
+python spqr2ermsd.py -i ../init.pdb -t $NPSSTRUCT -o ermsd_frags.lst -e
+./$BINERMSD > ermsd_$NAME.out
+cd ../..
+echo "ERMSD minimization successful!"
+
+########
+
+#STEP 3#
+echo "Structure refinement: minimization of SPQR energy."
+THISSIM=03
+PREVSIM=02
+mkdir $DIRNAME/$THISSIM
+mkdir $DIRNAME/$THISSIM/pdb_inits
+MCPARAMS3=(${MC_PARAMS[@]})
+SAPARAMS3=(${SA_PARAMS[@]})
+MCPARAMS3[6]=$ENERG_NMC
+#MCPARAMS3[7]=$ENERG_NMC
+#MCPARAMS3[8]=$ENERG_NMC
+MCPARAMS3[12]=$ENERGY_PATH/$INTRAC
+SAPARAMS3[0]=$ENERG_TSA
+SAPARAMS3[4]=$ENERG_NSA                                                                                                                           
+write_params $DIRNAME/$THISSIM/params.spqr ${MCPARAMS3[@]} 1 ${SAPARAMS3[@]}
+SEL_ERMSD_FILE=$DIRNAME/$PREVSIM/configs/chk.last.p$IND.mc
+cp $SEL_ERMSD_FILE $DIRNAME/$THISSIM/pdb_inits/init.p$IND.mc
+cp $BIN_PATH/$BINENERG $DIRNAME/$THISSIM
+cd $DIRNAME/$THISSIM
+./$BINENERG  > energ_$NAME.out
+cp final.p$IND.pdb ..
+cp configs/chk.last.p$IND.mc ..
+cp $TOOLS_PATH/SPQR_BBACKMAP.py .
+for cgstruct in `ls final.p*`; do
+    BBIND=`echo $cgstruct | awk 'BEGIN {FS="."}; {print $2}'`
+    python SPQR_BBACKMAP.py -i $cgstruct -o mini_at_$BBIND.pdb
+done
+cp mini_at_*.pdb ..
+cd ../..
+echo "Energy minimized."
+
+######
+#FINAL CHECK#
+echo "Checking loops for last time."
+cd $DIRNAME/01
+python SPQR_DLINK.py -i ../final.p00.pdb -t $NPSSTRUCT -o fcheck > ../fcheck.dat
+python SPQR_DLINK.py -i ../final.p00.pdb -t $NPSSTRUCT -o fcheck_pier -p > ../fcheck_pier.dat
+cd ../..
+
+########
+#CLEANING
+rm $DIRNAME/01.mc
+
+echo "Optimization successfully ended."
+
+########
+#END
+#################
