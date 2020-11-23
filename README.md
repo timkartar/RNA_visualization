@@ -2,12 +2,14 @@
 Raktim Mitra, Jiawei Huang, Bryan Dinh
 
 ## Background/Motivation
-One of the recent Kaggle challenges was to predict the degradation rates of nucleotides in an RNA molecule. At the time, messenger RNA (mRNA) vaccines were the most promising candidates for vaccines, but they have issues with degradation (stability). The a cut at a nucleotide can make a molecule ineffective. The goal of the competition was to accurately predict the likelihood of each base degrading.
+One of the recent Kaggle challenges was to predict the degradation rates of nucleotides in an RNA molecule. At the time, messenger RNA (mRNA) vaccines were the most promising candidates for vaccines, but they have issues with degradation (stability). The cut at a nucleotide can make a molecule ineffective. The goal of the competition was to accurately predict the likelihood of each base degrading.
 
 We think that the 3D structure will be informative about the degradation rates of RNA, but these molecules are generally large and difficult to simulate. Instead, we will make use of coarse-grain simulations to overcome this barrier.
 
 ## Project
 The goal of our project is to visualize the output from such simulation softwares such as SPQR on RNA molecules in parallel to assist in this process. If time permits, we will compare the results of a model trained with the augmented data to one without.
+
+![spqrrna](http://people.sissa.it/~spoblete/webpage/multiscale.png "RNA nucleotides represented as 2 points")*Image from SPQR*
 
 ### Available Data
 The input (training) data was a set of 3,000 RNA molecules with rates of degradation at each molcule.
@@ -24,4 +26,11 @@ This is an example of 1 entry:
 
 
 
+### References/Links
+S. Poblete, S. Bottaro and G. Bussi, A nucleobase-centric coarse-grained model for structure prediction of RNA motifs. _Nucleic Acids Res._ 46(4), 1674-1683 (2018).  [Link] https://doi.org/10.1093/nar/gkx1269 
 
+S. Bottaro, F. Di Palma and G. Bussi, The role of nucleobase interactions in RNA structure and dynamics. _Nucleic Acids Res._ 42(21), 13306-13314 (2014).
+
+S. Poblete, S. Bottaro and G. Bussi, Effects and limitations of a nucleobase-driven backmapping procedure for nucleic acids using steered molecular dynamics. _Biophys. Biochem. Res. Comm._ 498 (2), 352-358 (2018).
+
+Eterna platform. https://eternagame.org
