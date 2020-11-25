@@ -1,10 +1,10 @@
 /***********************************************************************
-  Program atomv.c--ball representation of atoms.
+  Program rnav.c--representation of RNAs.
   Required files
     atomv.h:   Include file
     md.conf:   MD configuration file containing atomic coordinates
 ***********************************************************************/
-#include "atomv.h"
+#include "rnav.h"
 #include <stdio.h>
 #include <math.h>
 #include <OpenGL/gl.h>    /* Header file for the OpenGL library */

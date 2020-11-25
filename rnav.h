@@ -1,5 +1,5 @@
 /***********************************************************************
-  atomv.h: an include file for atom.c
+  rnav.h: an include file for rnav.c
 ***********************************************************************/
 #define Ratom 1.0         /* RGB color of an atom */
 #define Gatom 1.0
