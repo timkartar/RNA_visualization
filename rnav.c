@@ -37,7 +37,8 @@ void drawScene(void);
 void display(void);
 void initView(float *, float *);
 void readConf(void);
-void readPDB(void);
+// void readPDB();
+// void readPDB(char []);
 //void makeradiuslist(void);
 /**********************************************************************/
 void reshape (int w, int h) {
@@ -245,7 +246,7 @@ void initView (float *min_ext, float *max_ext) {
   eye[2] = center[2] + 1.5*dis;
   up[0] = 0.0;
   up[1] = 0.0;
-  up[2] = 150.0;
+  up[2] = (min_ext[2] + max_ext[2])/2;
 //////////////////////////////////////////////////////////////////////////
   /* set parameters for gluPerspective() */
   /* Near- & far clip-plane distances */
@@ -283,13 +284,15 @@ necessary arrays.
   fclose(fp);
 }
 //////////////////////////////////////////////////////////////////////////////
-void readPDB(){
+// void readPDB(char *path){
+void readPDB(char *path){
 /***********************************************************************
 Read coarse-grain atomic coordinates and atom type from a PDB file & allocates 
 necessary arrays.
 ***********************************************************************/
     int l, j;
-    fp = fopen("./pdb_file/test/init_0.pdb","r");
+    // fp = fopen("./pdb_file/test/init_0.pdb","r");
+    fp = fopen(path, "r");
     /* The part below calculates number of lines, 
      * (important )for our purposes number of lines = number of atoms*/ 
     natoms = 0;
@@ -300,9 +303,10 @@ necessary arrays.
     // Close the file 
     fclose(fp); 
     atoms = (AtomType *) malloc(sizeof(AtomType)*natoms);
-    fp = fopen("./pdb_file/test/init_0.pdb","r");
-    for (l=0; l<2; l++) {min_ext[l] = -10; max_ext[l] = 10;}
-    min_ext[2] = -2; max_ext[2] = 310;
+    fp = fopen(path, "r");
+    // fp = fopen("./pdb_file/test/init_0.pdb","r");
+    for (l=0; l<3; l++) {min_ext[l] = 9999; max_ext[l] = -999;}
+    // min_ext[2] = -2; max_ext[2] = 310;
     char * dummy = (char *)malloc(5 * sizeof(char));
     int dummy1, dummy2, dummy3;
     for (j= 0; j<natoms; j++){
@@ -312,25 +316,33 @@ necessary arrays.
                 &(atoms[j].basetype), &dummy1, &dummy2,
                 &(atoms[j].crd[0]),&(atoms[j].crd[1]),
                 &(atoms[j].crd[2]));
+        for (l=0; l<3; l++) {
+            if (min_ext[l] > atoms[j].crd[l])
+                min_ext[l] = atoms[j].crd[l];
+            else if(max_ext[l] < atoms[j].crd[l])
+                max_ext[l] = atoms[j].crd[l];
+        }
     }
     printf("%c %d %c %c %d %d %f %f %f", dummy, dummy1, atoms[0].type,
                 atoms[0].basetype, dummy1, dummy2,
                 atoms[0].crd[0],atoms[0].crd[1],
                 atoms[0].crd[2]);
     fclose(fp);
+    for (l=0; l<2; l++) {
+        min_ext[l] -= 2;
+        max_ext[l] += 2;    
+    }
 
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**********************************************************************/
 int main(int argc, char **argv) {
 /**********************************************************************/
-
   glutInit(&argc, argv);
-
   /* Read atomic coordinates from an MD-configuration file */
   //readConf();
-  readPDB();
-  /* Set up an window */
+  readPDB(argv[argc-1]);
+  /* Set up an window *∫/
   /* Initialize display mode */
   glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
   /* Specify window size */
