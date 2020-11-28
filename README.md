@@ -6,7 +6,7 @@ One of the recent Kaggle challenges was to predict the degradation rates of nucl
 
 We think that the 3D structure will be informative about the degradation rates of RNA, but these molecules are generally large and difficult to simulate. Instead, we will make use of coarse-grain simulations to overcome this barrier.
 
-![spqrrna](http://people.sissa.it/~spoblete/webpage/multiscale.png "RNA nucleotides represented as 2 points")*Image from SPQR*
+![spqrrna](https://github.com/timkartar/cs596_rna_viz/blob/main/example_visualization.png?raw=true)*Static single stranded RNA visualization*
 
 SPQR is a coarse-grain method shown to accurately predict secondary and tertiary structure. It represents each nucleotide as 2 points and focuses on modeling base-base and base-sugar interactions.
 
