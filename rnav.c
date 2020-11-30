@@ -323,10 +323,6 @@ necessary arrays.
                 max_ext[l] = atoms[j].crd[l];
         }
     }
-    printf("%c %d %c %c %d %d %f %f %f", dummy, dummy1, atoms[0].type,
-                atoms[0].basetype, dummy1, dummy2,
-                atoms[0].crd[0],atoms[0].crd[1],
-                atoms[0].crd[2]);
     fclose(fp);
     for (l=0; l<2; l++) {
         min_ext[l] -= 2;
