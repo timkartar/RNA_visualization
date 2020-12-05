@@ -345,7 +345,7 @@ int max_pdb_idx = 200;
 void animate(){/* Callback function for idle events */
 
   if (cur_pdb_idx < max_pdb_idx){
-    sprintf(pdb_file,"%s%s%d%s",path,prefix,i,suffix);
+    sprintf(pdb_file,"%s%s%d%s",path,prefix,cur_pdb_idx,suffix);
     printf(pdb_file);
     printf("\n");
 
