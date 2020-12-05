@@ -40,7 +40,7 @@ void MC_write_pdb(FILE * , int, double *, double *, double *, double , double , 
 
 int main(int nargs, char **args){
   int i,j,d;
-  if(nargs != 4){
+  if(nargs != 5){
     fprintf(stderr, "Analysis requires the file name, the number of configurations saved there and the initial config number.\n");
     exit(1);
   }
@@ -52,7 +52,7 @@ int main(int nargs, char **args){
   double temperature, energy_t;
   
   MC_open_analysis_files(args[1]);
-  sprintf(name, "confs.pdb");
+  sprintf(name, args[4]);
   FILE *tempconf;
   tempconf=fopen(name, "w");
 
