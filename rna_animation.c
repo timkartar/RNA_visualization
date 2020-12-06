@@ -341,7 +341,7 @@ necessary arrays.
 }
 
 int cur_pdb_idx = 1;
-int max_pdb_idx = 200;
+int max_pdb_idx = 20;
 void animate(){/* Callback function for idle events */
 
   if (cur_pdb_idx < max_pdb_idx){
