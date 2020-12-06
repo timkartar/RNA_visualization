@@ -341,7 +341,7 @@ necessary arrays.
 }
 
 int cur_pdb_idx = 1;
-int max_pdb_idx = 20;
+int max_pdb_idx;
 void animate(){/* Callback function for idle events */
 
   if (cur_pdb_idx < max_pdb_idx){
@@ -365,11 +365,23 @@ void animate(){/* Callback function for idle events */
 int main(int argc, char **argv) {
 /**********************************************************************/
   glutInit(&argc, argv);
-  printf("%s\n", argv[1]);      //checking first argument correctly saved
+  printf("given dir: %s\n", argv[1]);      //checking first argument correctly saved
   strcpy(path,argv[1]);         //saving directory path to "path" var
+
+  if (path[strlen(path)-1] != "/"){
+    strcat(path,"/");           //add trailing "/" if needed
+    printf("using dir: %s\n", path);
+  }
   char first_pdb[100];          //var for first pdb to be read
   sprintf(first_pdb, "%s%s%d%s",path,prefix,0,suffix);
   printf("%s\n",first_pdb);
+
+  if (argc > 2) {
+      max_pdb_idx = atoi(argv[2]);
+  }
+  else {
+      max_pdb_idx = 1;
+  }
 
   /* Read atomic coordinates from an MD-configuration file */
   //readConf();
