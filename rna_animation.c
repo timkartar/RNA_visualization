@@ -394,7 +394,7 @@ int main(int argc, char **argv) {
   /* Specify window size */
   glutInitWindowSize(winx, winy);
   /* Open window */
-  glutCreateWindow("Lennard-Jones Atoms");
+  glutCreateWindow("RNA Animation");
 
   /* Initialize view */
   initView(min_ext, max_ext);
