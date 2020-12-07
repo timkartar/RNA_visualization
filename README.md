@@ -1,19 +1,37 @@
-# RNA Visualizer
-Raktim Mitra, Jiawei Huang, Bryan Dinh
+# OpenGL visualization of an mRNA forming 3D structure through course grain simulation by SPQR
+<a href="https://github.com/timkartar/cs596_rna_viz/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=timkartar/cs596_rna_viz" />
+</a>
 
-## Background/Motivation
+## Project
 One of the recent Kaggle challenges was to predict the degradation rates of nucleotides in an RNA molecule. At the time, messenger RNA (mRNA) vaccines were the most promising candidates for vaccines, but they have issues with degradation (stability). The cut at a nucleotide can make a molecule ineffective. The goal of the competition was to accurately predict the likelihood of each base degrading.
 
 We think that the 3D structure will be informative about the degradation rates of RNA, but these molecules are generally large and difficult to simulate. Instead, we will make use of coarse-grain simulations to overcome this barrier.
 
+SPQR is a coarse-grain method shown to accurately predict secondary and tertiary structure. It represents each nucleotide as 2 points and focuses on modeling base-base and base-sugar interactions.
+
+The goal of our project is to visualize the output from such simulation softwares such as SPQR on RNA molecules in parallel to assist in this process using OpenGL in C. 
+
 ![spqrrna](https://github.com/timkartar/cs596_rna_viz/blob/main/demo_gif/rna_animation_demo.gif?raw=true)*OpenGL visualization of an mRNA forming 3D structure through course grain simulation by SPQR*
+
+Color Legend: `Red` - Ribose Sugar, `Green` - Phospate Residue, rest are RNA bases 'A','U','G','C'. 
+
+In the simulation demo above we can clearly see secondary base paired RNA structures forming. 
+
+The demo was generated from 100 equally spaced snapshots of a coarse grain simulation by SPQR-eMC simulation process.
+
+The simulations are done following instructions given in the SPQR documentation <a href="https://github.com/timkartar/cs596_rna_viz/blob/main/spqr/doc/ug.pdf"> here </a>
+
+## Run Instruction: 
+1. Follow OS-specific compilation instruction for OpenGL C application given here to generate executables `rnav`,`rna_animation` . <br/>
+2. To generate a static image from one PDB file in with one ATOM description per line: `./rnav <pdb_file_name>` <br/>
+3. To generate a video simulation from multiple stepwise files: `./rna_animation <pdb_dir_name> <number of files>` . <br/>
+- no `/` at the end of `<pdb_dir_name>` and files should be named as `init_XX.pdb` where `XX` ranges from 0 to `<nnumber of files> - 1`
+
 
 ![spqrrna](https://github.com/timkartar/cs596_rna_viz/blob/main/example_visualization.png?raw=true)*Static single stranded RNA visualization*
 
-SPQR is a coarse-grain method shown to accurately predict secondary and tertiary structure. It represents each nucleotide as 2 points and focuses on modeling base-base and base-sugar interactions.
 
-## Project
-The goal of our project is to visualize the output from such simulation softwares such as SPQR on RNA molecules in parallel to assist in this process. If time permits, we will compare the results of a model trained with the augmented data to one without.
 
 ### Available Data
 The input (training) data was a set of 3,000 RNA molecules with rates of degradation at each molcule.
@@ -24,11 +42,8 @@ Some of the notable fields are:
 - 2D structure
 - predicted loop type
 
-This is an example of 1 entry:
-
-> {"index":0,"id":"id_001f94081","sequence":"GGAAAAGCUCUAAUAACAGGAGACUAGGACUACGUAUUUCUAGGUAACUGGAAUAACCCAUACCAGCAGUUAGAGUUCGCUCUAACAAAAGAAACAACAACAACAAC","structure":".....((((((.......)))).)).((.....((..((((((....))))))..)).....))....(((((((....))))))).....................","predicted_loop_type":"EEEEESSSSSSHHHHHHHSSSSBSSXSSIIIIISSIISSSSSSHHHHSSSSSSIISSIIIIISSXXXXSSSSSSSHHHHSSSSSSSEEEEEEEEEEEEEEEEEEEEE","signal_to_noise":6.894,"SN_filter":1.0,"seq_length":107,"seq_scored":68,"reactivity_error":[0.1359,0.207,0.1633,0.1452,0.1314,0.105,0.0821,0.0964,0.0756,0.1087,0.1377,0.1544,0.1622,0.1388,0.1284,0.1009,0.0941,0.0564,0.0417,0.0596,0.0482,0.1041,0.0942,0.052,0.0583,0.0403,0.0491,0.1003,0.0525,0.081,0.1103,0.0707,0.0797,0.0997,0.0968,0.0939,0.0931,0.0604,0.0427,0.0331,0.0412,0.0286,0.0415,0.0394,0.0636,0.0816,0.0474,0.0295,0.0163,0.0211,0.0426,0.0592,0.0778,0.0579,0.0606,0.0462,0.0354,0.0324,0.0351,0.0539,0.0565,0.0489,0.0221,0.0254,0.0328,0.0394,0.0409,0.0547],"deg_error_Mg_pH10":[0.2613,0.3842,0.1372,0.2531,0.1798,0.1371,0.1736,0.1791,0.1056,0.1896,0.1834,0.1659,0.2108,0.181,0.1353,0.128,0.1296,0.0949,0.0796,0.088,0.0536,0.0997,0.0757,0.0973,0.0874,0.0767,0.0476,0.0916,0.0673,0.0858,0.0976,0.0662,0.0747,0.1119,0.1036,0.1,0.0907,0.0702,0.0394,0.05,0.0507,0.0396,0.0541,0.0862,0.0832,0.0793,0.0606,0.0511,0.0212,0.0338,0.0573,0.0503,0.1026,0.0449,0.0452,0.0395,0.0417,0.033,0.0417,0.0483,0.0517,0.0404,0.0274,0.0271,0.0306,0.0384,0.0516,0.0523],"deg_error_pH10":[0.2631,0.286,0.0964,0.1574,0.1,0.1019,0.114,0.1341,0.0517,0.1474,0.124,0.0966,0.1564,0.1417,0.1036,0.1142,0.1423,0.105,0.0806,0.0769,0.0701,0.1103,0.0847,0.095,0.0932,0.0952,0.062,0.1367,0.0846,0.0883,0.1514,0.0678,0.119,0.1442,0.134,0.125,0.134,0.0934,0.0622,0.0703,0.0866,0.0546,0.0712,0.0955,0.0951,0.0912,0.0768,0.0674,0.0324,0.0496,0.076,0.0705,0.1172,0.063,0.0752,0.0603,0.069,0.067,0.0803,0.1006,0.1042,0.0788,0.0688,0.0756,0.0675,0.0813,0.1021,0.1191],"deg_error_Mg_50C":[0.1501,0.275,0.0947,0.1866,0.1369,0.1148,0.0995,0.1449,0.0705,0.1588,0.1496,0.121,0.1767,0.1382,0.111,0.112,0.1151,0.0836,0.067,0.0794,0.0464,0.0806,0.0678,0.0824,0.0671,0.0675,0.0612,0.0763,0.0759,0.0853,0.1042,0.0581,0.0924,0.1177,0.1025,0.1006,0.0986,0.078,0.0455,0.0658,0.0583,0.0417,0.0468,0.0787,0.0738,0.0653,0.0502,0.0512,0.0199,0.0285,0.0508,0.0564,0.1069,0.0487,0.0509,0.0433,0.0449,0.0421,0.0548,0.0623,0.0513,0.0528,0.0379,0.0439,0.0462,0.0544,0.0663,0.057],"deg_error_50C":[0.2167,0.3475,0.188,0.2124,0.1703,0.1481,0.1352,0.1834,0.0638,0.1804,0.1915,0.1713,0.163,0.1777,0.1541,0.1327,0.1608,0.123,0.0927,0.1024,0.0872,0.1352,0.1034,0.1198,0.1173,0.1233,0.09,0.1543,0.1054,0.1166,0.1531,0.0904,0.1466,0.1726,0.151,0.1333,0.1484,0.11,0.0666,0.0904,0.0982,0.0608,0.0803,0.1014,0.1159,0.1042,0.0783,0.0757,0.0416,0.0582,0.0894,0.0881,0.1127,0.0622,0.0795,0.0604,0.0611,0.0592,0.0805,0.0817,0.0809,0.0719,0.0584,0.0649,0.0817,0.0717,0.0924,0.1093],"reactivity":[0.3297,1.5693,1.1227,0.8686,0.7217,0.4384,0.256,0.3364,0.2168,0.3583,0.9541,1.4113,1.6911,1.2494,1.1895,0.6909,0.4736,0.1754,0.0582,0.2173,0.0785,0.8249,0.7638,0.1095,0.2568,0.0895,0.1576,0.7727,0.1573,0.5043,1.0444,0.4766,0.5588,0.9054,1.0125,1.0482,1.044,0.4522,0.211,0.0461,0.082,0.0643,0.1526,0.0894,0.5081,1.0745,0.3215,0.0716,0.0244,0.0123,0.1984,0.4961,1.0641,0.6394,0.6789,0.365,0.1741,0.1408,0.1646,0.5389,0.683,0.4273,0.0527,0.0693,0.1398,0.2937,0.2362,0.5731],"deg_Mg_pH10":[0.7556,2.983,0.2526,1.3789,0.6376,0.3313,0.6763,0.7525,0.208,0.8908,0.9898,0.8679,1.7403,1.3795,0.7746,0.719,0.7229,0.4069,0.2632,0.3631,0.0702,0.4765,0.2766,0.4936,0.4379,0.3261,0.0898,0.4159,0.2264,0.4142,0.5213,0.2653,0.3163,0.9059,0.8762,0.8991,0.7262,0.4762,0.1187,0.1952,0.1777,0.1281,0.2664,0.8831,0.8752,0.8693,0.5119,0.3476,0.0438,0.1236,0.458,0.3214,2.1155,0.3708,0.3536,0.2669,0.3161,0.1793,0.3259,0.47,0.6141,0.3122,0.1418,0.1277,0.1608,0.3336,0.6491,0.6898],"deg_pH10":[2.3375,3.506,0.3008,1.0108,0.2635,0.3403,0.5617,0.681,0.053,0.5348,0.5526,0.3278,1.0806,0.7699,0.3901,0.5045,0.6475,0.5176,0.2206,0.2255,0.0581,0.4302,0.3344,0.2718,0.466,0.4763,0.1275,0.6886,0.2323,0.1186,0.8321,0.1317,0.5878,0.7162,0.7943,0.7224,0.8105,0.4782,0.1797,0.1344,0.2217,0.1152,0.1707,0.4324,0.4166,0.4558,0.3606,0.2239,0.0481,0.0691,0.2423,0.1003,0.9322,0.253,0.2923,0.1455,0.2523,0.2504,0.4065,0.7361,0.9412,0.3137,0.3489,0.414,0.2238,0.5142,0.7681,1.172],"deg_Mg_50C":[0.3581,2.9683,0.2589,1.4552,0.7244,0.4971,0.3819,0.9115,0.1668,1.0613,1.1317,0.7468,1.9049,1.103,0.7317,0.7649,0.701,0.4327,0.236,0.4039,0.0373,0.3362,0.2914,0.3956,0.3074,0.3079,0.2379,0.2027,0.3721,0.4504,0.6303,0.2092,0.6219,1.0619,0.8667,0.9206,0.8516,0.6308,0.1756,0.4022,0.2236,0.1452,0.1469,0.6622,0.5692,0.4583,0.2705,0.2798,0.0298,0.0367,0.2299,0.2873,1.7464,0.3233,0.2996,0.2029,0.2311,0.2032,0.4079,0.5544,0.3829,0.3445,0.1898,0.2649,0.2714,0.4812,0.7026,0.4254],"deg_50C":[0.6382,3.4773,0.9988,1.3228,0.7877,0.589,0.5231,1.0125,0.0585,0.7349,1.2215,1.0321,0.8274,1.0442,0.8472,0.5547,0.7291,0.5541,0.2404,0.3598,0.1496,0.6154,0.4053,0.4641,0.5976,0.6747,0.2979,0.8376,0.3915,0.4226,0.7223,0.2991,0.9497,1.2491,1.0324,0.7868,1.0355,0.6604,0.1921,0.3593,0.3799,0.151,0.2636,0.4919,0.7486,0.6304,0.3466,0.3033,0.0855,0.1387,0.4254,0.3571,0.794,0.2258,0.3457,0.1514,0.1602,0.1572,0.3912,0.3724,0.4432,0.2169,0.1959,0.2391,0.4234,0.3287,0.5301,0.8472]}
-
-
+## Acknowledgments 
+We thank Prof. Aiichiro Nakano and CS596 course organizers at University of Southern California for the opportunity, help and resources to make this project possible. 
 
 ### References/Links
 S. Poblete, S. Bottaro and G. Bussi, A nucleobase-centric coarse-grained model for structure prediction of RNA motifs. _Nucleic Acids Res._ 46(4), 1674-1683 (2018).  [Link] https://doi.org/10.1093/nar/gkx1269 
