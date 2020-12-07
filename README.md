@@ -1,10 +1,10 @@
-# OpenGL visualization of an mRNA forming 3D structure through course grain simulation by SPQR
+# OpenGL visualization of mRNA forming 3D structure through course grain simulation by SPQR
 <a href="https://github.com/timkartar/cs596_rna_viz/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=timkartar/cs596_rna_viz" />
 </a>
 
 ## Project
-One of the recent Kaggle challenges was to predict the degradation rates of nucleotides in an RNA molecule. At the time, messenger RNA (mRNA) vaccines were the most promising candidates for vaccines, but they have issues with degradation (stability). The cut at a nucleotide can make a molecule ineffective. The goal of the competition was to accurately predict the likelihood of each base degrading.
+One of the recent Kaggle challenges was to predict the degradation rates of nucleotides in an RNA molecule. At the time, messenger RNA (mRNA) vaccines were the most promising candidates for vaccines, but they have issues with degradation (stability). The cut at a nucleotide can make a molecule ineffective. The goal of the competition was to accurately predict the likelihood of each base degrading to see which candidates were most stable.
 
 We think that the 3D structure will be informative about the degradation rates of RNA, but these molecules are generally large and difficult to simulate. Instead, we will make use of coarse-grain simulations to overcome this barrier.
 
@@ -43,7 +43,7 @@ Some of the notable fields are:
 - predicted loop type
 
 ## Acknowledgments 
-We thank Prof. Aiichiro Nakano and CS596 course organizers at University of Southern California for the opportunity, help and resources to make this project possible. 
+We thank Prof. Aiichiro Nakano and CSCI 596 course organizers at University of Southern California for the opportunity, help, and resources to make this project possible. 
 
 ### References/Links
 S. Poblete, S. Bottaro and G. Bussi, A nucleobase-centric coarse-grained model for structure prediction of RNA motifs. _Nucleic Acids Res._ 46(4), 1674-1683 (2018).  [Link] https://doi.org/10.1093/nar/gkx1269 
