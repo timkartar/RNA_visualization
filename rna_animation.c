@@ -365,8 +365,8 @@ void animate(){/* Callback function for idle events */
 int main(int argc, char **argv) {
 /**********************************************************************/
   glutInit(&argc, argv);
-  printf("given dir: %s\n", argv[1]);      //checking first argument correctly saved
-  strcpy(path,argv[1]);         //saving directory path to "path" var
+  printf("given dir: %s\n", argv[1]);       //checking first argument correctly saved
+  strcpy(path,argv[1]);                     //saving directory path to "path" var
 
   if (path[strlen(path)-1] != "/"){
     strcat(path,"/");           //add trailing "/" if needed
