@@ -1,4 +1,4 @@
-# OpenGL visualization of mRNA forming 3D structure through course grain simulation by SPQR
+# OpenGL Visualization of mRNA Forming 3D Structure through Coarse-grain Simulation by SPQR
 <a href="https://github.com/timkartar/cs596_rna_viz/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=timkartar/cs596_rna_viz" />
 </a>
@@ -6,7 +6,7 @@
 ## Project
 One of the recent Kaggle challenges was to predict the degradation rates of nucleotides in an RNA molecule. At the time, messenger RNA (mRNA) vaccines were the most promising candidates for vaccines, but they have issues with degradation (stability). The cut at a nucleotide can make a molecule ineffective. The goal of the competition was to accurately predict the likelihood of each base degrading to see which candidates were most stable.
 
-We think that the 3D structure will be informative about the degradation rates of RNA, but these molecules are generally large and difficult to simulate. Instead, we will make use of coarse-grain simulations to overcome this barrier.
+We think that the 3D structure will be informative about the degradation rates of RNA, but these molecules are generally large and difficult to simulate. Instead, we will make use of coarse-grain simulations to overcome this obstacle.
 
 SPQR is a coarse-grain method shown to accurately predict secondary and tertiary structure. It represents each nucleotide as 2 points and focuses on modeling base-base and base-sugar interactions.
 
@@ -16,9 +16,9 @@ The goal of our project is to visualize the output from such simulation software
 
 Color Legend: `Red` - Ribose Sugar, `Green` - Phospate Residue, rest are RNA bases 'A','U','G','C'. 
 
-In the simulation demo above we can clearly see secondary base paired RNA structures forming. 
+In the simulation demo above we can clearly see secondary base-paired RNA structures forming. 
 
-The demo was generated from 100 equally spaced snapshots of a coarse grain simulation by SPQR-eMC simulation process.
+The demo was generated from 100 equally spaced snapshots of a coarse grain simulation by the SPQR-eMC simulation process.
 
 The simulations are done following instructions given in the SPQR documentation <a href="https://github.com/timkartar/cs596_rna_viz/blob/main/spqr/doc/ug.pdf"> here </a>
 
